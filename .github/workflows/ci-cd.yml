@@ -1,0 +1,75 @@
+name: Quran Companion AI - CI / CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-test:
+    name: Backend Test Suite & Health Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install System Audio Libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1 ffmpeg
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Pytest Test Suite
+        env:
+          USE_MOCK_ASR: "true"
+          DATABASE_URL: "sqlite+aiosqlite:///./test.db"
+        run: |
+          pytest backend/tests -v
+
+  mobile-validate:
+    name: Mobile TypeScript & Web Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install Mobile Dependencies
+        working-directory: ./mobile
+        run: npm ci
+
+      - name: Typecheck TypeScript
+        working-directory: ./mobile
+        run: npx tsc --noEmit
+
+      - name: Validate Expo Web Export
+        working-directory: ./mobile
+        run: npx expo export --platform web
+
+  deploy-notify:
+    name: Production Deployment Trigger
+    needs: [backend-test, mobile-validate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment Trigger Notice
+        run: |
+          echo "All automated tests and validation checks passed successfully."
+          echo "Automated deployment ready for cloud triggers (Render / Hugging Face / EAS)."

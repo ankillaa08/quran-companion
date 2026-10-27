@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Quran Companion AI",
+    "slug": "quran-companion-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#081510"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.qurancompanion.ai",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Quran Companion AI requires microphone access to listen to your Quran recitation and provide real-time word highlighting and memorization assistance."
+      }
+    },
+    "android": {
+      "package": "com.qurancompanion.ai",
+      "permissions": [
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "qurancompanion"
+  }
+}

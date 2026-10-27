@@ -1,0 +1,35 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+*.db
+*.sqlite3
+
+# Node / React Native
+node_modules/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+
+# Environment & Credentials
+.env
+.env.local
+*.pem
+*.key
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Audio & Dataset caches
+data/downloads/
+*.wav
+*.mp3
+*.pcm
