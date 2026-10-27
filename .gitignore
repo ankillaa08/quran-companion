@@ -33,3 +33,4 @@ data/downloads/
 *.wav
 *.mp3
 *.pcm
+.neon

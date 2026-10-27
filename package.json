@@ -1,0 +1,14 @@
+{
+  "name": "quran-companion",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix mobile run build",
+    "test:neon": "python scripts/test_neon_end_to_end.py",
+    "test:backend": "pytest backend/tests -v"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.5",
+    "@neon/env": "^1.6.6"
+  }
+}

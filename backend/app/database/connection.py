@@ -5,19 +5,32 @@ Supports SQLite (zero-config local development) and PostgreSQL (Neon/Render/AWS 
 import os
 import re
 import logging
+import pathlib
 from typing import AsyncGenerator, Dict, Any
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
 from app.database.models import Base
 
 logger = logging.getLogger("quran_companion.database")
 
+# Load environment variables: check .env.local first (from Neon CLI), then .env
+_current_dir = pathlib.Path(__file__).resolve().parent
+_root_dir = _current_dir.parent.parent.parent
+_env_local = _root_dir / ".env.local"
+_env_file = _root_dir / ".env"
+
+if _env_local.exists():
+    load_dotenv(_env_local, override=True)
+elif _env_file.exists():
+    load_dotenv(_env_file)
+
 RAW_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./quran_companion.db")
 
 def normalize_database_url(url: str) -> tuple[str, dict]:
     """
     Normalizes database connection string for SQLAlchemy + asyncpg.
-    Converts postgres:// or postgresql:// to postgresql+asyncpg:// and handles SSL.
+    Converts postgres:// or postgresql:// to postgresql+asyncpg:// and handles SSL/Neon parameters.
     """
     connect_args = {}
     
@@ -30,12 +43,14 @@ def normalize_database_url(url: str) -> tuple[str, dict]:
     elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-    # Handle SSL mode for managed clouds (e.g. Neon, Render, Supabase)
-    if "sslmode=" in url or os.getenv("DB_SSL_REQUIRE", "false").lower() in ("true", "1", "yes"):
+    # Handle SSL & Neon specific parameters (sslmode, channel_binding)
+    if "sslmode=" in url or "neon.tech" in url or os.getenv("DB_SSL_REQUIRE", "false").lower() in ("true", "1", "yes"):
         connect_args["ssl"] = "require"
-        # Strip sslmode parameter from query string to avoid asyncpg argument conflicts
-        url = re.sub(r"[?&]sslmode=[^&]+", "", url)
-        # Fix query string if leading ? was removed
+        # Strip parameters not recognized by asyncpg.connect()
+        url = re.sub(r"[?&](channel_binding|sslmode)=[^&]+", "", url)
+        # Clean trailing or isolated ? or &
+        url = re.sub(r"\?&", "?", url)
+        url = re.sub(r"[?&]$", "", url)
         if "?" not in url and "&" in url:
             url = url.replace("&", "?", 1)
 
@@ -85,7 +100,8 @@ async def check_db_health() -> Dict[str, Any]:
     """Tests connectivity to the active database engine."""
     try:
         async with AsyncSessionLocal() as session:
-            await session.execute(text("SELECT 1"))
+            res = await session.execute(text("SELECT 1"))
+            res.scalar()
         return {
             "status": "healthy",
             "type": "sqlite" if is_sqlite else "postgresql"
