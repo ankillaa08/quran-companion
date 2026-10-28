@@ -30,6 +30,16 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "qurancompanion"
+    "scheme": "qurancompanion",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "6cbc4aaa-1b22-4237-a903-d26995b045f6"
+      }
+    }
   }
 }
