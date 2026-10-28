@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+.pytest_cache
+node_modules
+mobile/
+docs/
+*.pyc
+__pycache__
+quran_companion.db
+test.db
+.env
+.env.local

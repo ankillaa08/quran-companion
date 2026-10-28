@@ -21,7 +21,7 @@ _env_local = _root_dir / ".env.local"
 _env_file = _root_dir / ".env"
 
 if _env_local.exists():
-    load_dotenv(_env_local, override=True)
+    load_dotenv(_env_local, override=False)
 elif _env_file.exists():
     load_dotenv(_env_file)
 
