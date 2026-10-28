@@ -18,7 +18,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 # Copy requirements and install system-wide in builder
 COPY backend/requirements.txt ./
-RUN uv pip install --system --no-cache -r requirements.txt
+RUN uv pip install --system --no-cache --torch-backend cpu -r requirements.txt
 
 # Final minimal runtime image
 FROM python:3.11-slim as runner
